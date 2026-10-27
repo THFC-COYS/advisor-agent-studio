@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advisor Agent Studio: A Chief of Staff Agent for Financial Advisors</title>
+<style>
+  :root{
+    --ink:#1a2433; --muted:#5d6b7a; --line:#dde3ea; --bg:#f5f6f8; --card:#ffffff;
+    --accent:#1c5d8f; --accent-soft:#e8f0f7; --good:#177245; --warn:#a15c00; --bad:#b3261e;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  header{background:linear-gradient(120deg,#10273f,#1c5d8f);color:#fff;padding:34px 20px 28px}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 18px}
+  header h1{margin:0 0 6px;font-size:30px;letter-spacing:.2px}
+  header p{margin:0;max-width:760px;color:#cfdfed;font-size:16px}
+  .badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .badge{border:1px solid rgba(255,255,255,.45);color:#f3d9a4;border-radius:999px;padding:3px 11px;font-size:12.5px}
+  .steps{display:flex;gap:8px;margin:22px 0 14px;flex-wrap:wrap}
+  .step-tab{flex:1;min-width:170px;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);padding:12px 14px;cursor:pointer;font-size:15px}
+  .step-tab b{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .step-tab.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .step-tab.done b{color:var(--good)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:18px}
+  .card h2{margin:0 0 6px;font-size:21px}
+  .card .sub{color:var(--muted);margin:0 0 16px;font-size:14.5px}
+  label{display:block;font-weight:600;font-size:14px;margin:14px 0 5px}
+  input[type=text],input[type=number],textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px;font-family:inherit;background:#fff}
+  textarea{min-height:110px;resize:vertical}
+  textarea.small{min-height:64px}
+  .hint{font-size:13px;color:var(--muted);margin-top:4px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.row{grid-template-columns:1fr}}
+  .btn{display:inline-block;border:0;border-radius:10px;padding:11px 18px;font-size:15px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff}
+  .btn.secondary{background:#e8ecf4;color:var(--ink)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .radio-group,.check-group{display:grid;gap:9px;margin-top:6px}
+  .radio-group label,.check-group label{font-weight:500;margin:0;display:flex;gap:9px;align-items:flex-start;font-size:15px;cursor:pointer}
+  .radio-group input,.check-group input{margin-top:4px}
+  .radio-group .desc,.check-group .desc{display:block;color:var(--muted);font-size:13px}
+  .err{background:#fdeceb;border:1px solid #f3c2bf;color:var(--bad);border-radius:10px;padding:10px 13px;font-size:14px;margin-top:12px;display:none}
+  pre.charter{background:#101c2b;color:#d7e6f5;border-radius:10px;padding:16px;font-size:13px;line-height:1.55;white-space:pre-wrap;word-wrap:break-word;max-height:430px;overflow:auto}
+  .panel h3{margin:0 0 8px;font-size:16px}
+  .panel ul{margin:6px 0 14px;padding-left:19px;font-size:14px}
+  .panel li{margin-bottom:4px}
+  .ok{color:var(--good);font-weight:600}
+  .finalstep{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:18px;margin-top:20px}
+  .finalstep h3{margin:0 0 8px;font-size:18px}
+  .finalstep p{margin:0 0 12px;font-size:15px}
+  .finalstep pre.charter{max-height:340px}
+  .timeback{background:#eef6ee;border:1px solid #bcdcc4;border-radius:12px;padding:15px 17px;margin-top:16px;font-size:15px}
+  .timeback b{font-size:17px}
+  .matrix-row{display:grid;grid-template-columns:1fr 1.5fr;gap:12px;border:1px solid var(--line);border-radius:10px;padding:12px 13px;margin-top:9px}
+  @media(max-width:760px){.matrix-row{grid-template-columns:1fr}}
+  .matrix-row .m-label{font-weight:600;font-size:15px}
+  .matrix-row .m-desc{color:var(--muted);font-size:13px}
+  .matrix-opts{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .matrix-opts label{font-weight:500;margin:0;display:flex;gap:6px;align-items:center;font-size:14px;cursor:pointer}
+  .group-head{font-size:16px;margin:22px 0 2px}
+  .audit-item{border:1px solid var(--line);border-radius:10px;padding:12px 13px;margin-top:9px}
+  .audit-item .a-label{font-weight:600;font-size:15px}
+  .audit-item .a-desc{color:var(--muted);font-size:13px}
+  .chip-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .chip-row .chip-label{font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;min-width:52px}
+  .chip-row label{font-weight:500;margin:0;display:flex;gap:5px;align-items:center;font-size:13.5px;cursor:pointer}
+  .module-card{border:1px solid var(--line);border-radius:10px;padding:14px 15px;margin-top:10px}
+  .module-card.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .module-card .mod-head{display:flex;gap:9px;align-items:flex-start;font-size:16px;font-weight:600;cursor:pointer}
+  .module-card .mod-head input{margin-top:5px}
+  .module-card ul{margin:8px 0 4px;padding-left:19px;font-size:14px}
+  .module-card li{margin-bottom:3px}
+  .opp-row{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-top:8px;font-size:14.5px}
+  .opp-row .mod{color:var(--accent);font-weight:600;white-space:nowrap}
+  footer{color:var(--muted);font-size:13.5px;padding:8px 0 42px}
+  footer a{color:var(--accent)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Advisor Agent Studio</h1>
+    <p>Design a Muse agent that works as your chief of staff: preparing review meetings, assembling reporting from the numbers you supply, keeping practice operations current, and drafting client education in plain language. One line never moves: the agent prepares, you decide, and you deliver. You keep the license, the judgment, and the client relationship. The agent brings the preparation, the memory, and the discipline.</p>
+    <div class="badges">
+      <span class="badge">Muse first</span>
+      <span class="badge">Prepares, never advises</span>
+      <span class="badge">No invented figures</span>
+      <span class="badge">You review, it drafts</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="steps" role="tablist">
+    <button class="step-tab active" id="tab1" onclick="goStep(1)"><b>Step 1</b>Find: your practice week</button>
+    <button class="step-tab" id="tab2" onclick="goStep(2)"><b>Step 2</b>The Stack: your modules</button>
+    <button class="step-tab" id="tab3" onclick="goStep(3)"><b>Step 3</b>Soul: who your agent is</button>
+    <button class="step-tab" id="tab4" onclick="goStep(4)"><b>Step 4</b>Approvals and your brief</button>
+  </div>
+
+  <!-- STEP 1: FIND -->
+  <section class="card" id="panel1">
+    <h2>Start with your week as an advisor</h2>
+    <p class="sub">An advisory practice runs on preparation: meetings prepped, numbers assembled, files kept clean, follow-ups closed. Rate the routines below honestly: how much time each one takes, and how it feels. The studio scores where an agent helps most, and your stack is built from the answer. Every routine here is preparation work, never advice.</p>
+    <div class="row">
+      <div>
+        <label for="advisorName">Your name (the licensed advisor)</label>
+        <input type="text" id="advisorName" placeholder="e.g. Dana Whitfield">
+      </div>
+      <div>
+        <label for="practiceName">Your practice</label>
+        <input type="text" id="practiceName" placeholder="e.g. Whitfield Wealth Partners">
+      </div>
+    </div>
+    <label for="niche">Who you serve (your client niche, in a few words)</label>
+    <input type="text" id="niche" placeholder="e.g. small business owners approaching retirement">
+    <div id="auditList"></div>
+    <div class="timeback" id="timeBackBox"></div>
+    <div class="btn-row">
+      <button class="btn secondary" onclick="loadSample()">Load a sample advisor profile</button>
+      <button class="btn" onclick="goStep(2)">Continue to the stack</button>
+    </div>
+    <p class="hint">The sample is a fictional independent advisor with a heavy review-meeting load, included so you can test the studio in one click.</p>
+  </section>
+
+  <!-- STEP 2: THE STACK -->
+  <section class="card hidden" id="panel2">
+    <h2>Your stack</h2>
+    <p class="sub">Your audit, scored. The top opportunities map onto four modules built for an advisory practice. Your agent runs the modules you switch on, and only those. At least one module must be on. Every module is phrased as preparation, because that is all the agent ever does.</p>
+    <label>Your top opportunities</label>
+    <div id="oppList"></div>
+    <label style="margin-top:20px">The modules your agent runs</label>
+    <div id="moduleList"></div>
+    <div class="err" id="err2"></div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="goStep(1)">Back</button>
+      <button class="btn" onclick="step2Continue()">Continue to soul</button>
+    </div>
+  </section>
+
+  <!-- STEP 3: SOUL -->
+  <section class="card hidden" id="panel3">
+    <h2>Give your chief of staff a soul</h2>
+    <p class="sub">The stack is what the agent does. Soul is who the agent is: its name, its identity, how it carries itself with your practice, what it optimizes for, what it will never do, and the voice it speaks in. Everything on this page lands in Section 1 of your package, word for word where you wrote it yourself.</p>
+    <label for="agentName">Name your agent</label>
+    <input type="text" id="agentName" value="Sage">
+    <p class="hint">Leave it blank and the studio fills in a default. The package never ships with an empty name.</p>
+    <label for="soulIdentity">Identity statement</label>
+    <input type="text" id="soulIdentity">
+    <p class="hint">One line, written for you: "You are NAME, chief of staff to ADVISOR, a financial advisor serving NICHE: ..." Edit it freely. What you leave here is what the package carries.</p>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn ghost" onclick="regenerateIdentity()">Rewrite it from my setup</button>
+    </div>
+    <label>Character: how the agent carries itself</label>
+    <div class="check-group" id="bearingGroup"></div>
+    <label>Values: what it optimizes for, and what it refuses</label>
+    <div class="check-group" id="valueGroup"></div>
+    <label for="valuesText">Your own values, one per line</label>
+    <textarea id="valuesText" class="small" placeholder="e.g. Every client hears from us before they have to ask"></textarea>
+    <label>Never-do rules</label>
+    <div class="check-group" id="neverGroup"></div>
+    <label for="neverDoText">Your own never-do rules, one per line, in your words</label>
+    <textarea id="neverDoText" class="small" placeholder="e.g. Never open a client meeting prep without the last meeting's notes"></textarea>
+    <p class="hint">These lines are copied into the package exactly as you write them. Your words outrank the presets.</p>
+    <label for="voiceSample">Voice in messages: your approved sample line</label>
+    <textarea id="voiceSample" class="small"></textarea>
+    <p class="hint">Generated from your stack and your practice. Approve it as is, or edit it until it sounds like the chief of staff you want. The text you leave in this box is the text that ships.</p>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn ghost" onclick="regenerateVoice()">Regenerate the sample</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="goStep(2)">Back</button>
+      <button class="btn" onclick="goStep(4)">Continue to approvals</button>
+    </div>
+  </section>
+
+  <!-- STEP 4: APPROVALS + BRIEF -->
+  <section class="card hidden" id="panel4">
+    <h2>Set the approval matrix, then name the owner</h2>
+    <p class="sub">This is the governance step, and for an advisor it is the whole product. Your agent works close to client trust and client data, so this edition is the strictest in the Studio line: nothing here defaults to Runs freely. Pure drafting may notify you after the fact; everything else asks first. This practice runs on review.</p>
+    <label>Approval matrix</label>
+    <div id="matrixList"></div>
+    <label for="ownerName">Accountable owner</label>
+    <input type="text" id="ownerName" placeholder="The accountable licensed advisor, usually you">
+    <p class="hint">Studio rule: <b>no owner, no agent.</b> An advisor's agent without a named accountable licensed advisor does not ship. The final package will not generate until the owner is named, and the package states plainly that the agent's output is preparatory and the advisor is responsible for all advice and client communications.</p>
+    <label for="escalationText">Escalation rule (how the agent reaches you when something needs a decision)</label>
+    <textarea id="escalationText" class="small">Message me directly with what is needed and which client it concerns. Anything involving advice, a number I have not supplied, or a credential or account number a client pasted stops immediately and waits for my reply.</textarea>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="goStep(3)">Back</button>
+      <button class="btn" onclick="step4Continue()">Build my agent package</button>
+    </div>
+    <div class="err" id="err4"></div>
+  </section>
+
+  <section class="card hidden" id="publishCard">
+    <h2>Your agent package</h2>
+    <p class="sub">Under the launch checklist: a sample of the first task output your agent will produce, and the final step that creates the agent in Muse.</p>
+    <div class="check-group checklist" id="publishList">
+      <label><input type="checkbox"> Accountable licensed advisor named, and it is the human who actually reviews this agent</label>
+      <label><input type="checkbox"> Approval matrix reviewed line by line: nothing runs freely in this practice</label>
+      <label><input type="checkbox"> Never-do rules read aloud once: advice, invented figures, credentials</label>
+      <label><input type="checkbox"> Standing guardrails understood: the five compliance rules bind every draft, at every approval level</label>
+      <label><input type="checkbox"> Kill switch understood: I can pause or delete this agent at any time</label>
+      <label><input type="checkbox"> Final configuration scored with agentlint before launch</label>
+    </div>
+    <h3 style="margin:20px 0 8px;font-size:16px">Preview: your agent's first task output</h3>
+    <p class="sub" style="margin-bottom:10px">A sample generated from your stack choices, so you can see the shape of the first day before the agent exists. Every figure in it is a placeholder for numbers you supply. The agent never fills one in.</p>
+    <pre class="charter" id="briefPreview"></pre>
+    <div class="finalstep">
+      <h3>Final step: create your agent in Muse</h3>
+      <p><b>Copy the final output below and paste it into Muse. Your chief of staff agent is created from this package.</b> The package holds everything Muse needs, in three sections: who your agent is (its soul: name, identity, character, values, never-do rules, and voice), what your agent does (your stack modules, the audit behind them, and a sample first task output), and where you stay in charge (the approval matrix, the five standing compliance guardrails, and your owner line).</p>
+      <pre class="charter" id="finalOutput"></pre>
+      <div class="btn-row">
+        <button class="btn" onclick="copyPackage()">Copy final output for Muse</button>
+        <button class="btn secondary" onclick="downloadPackage()">Download the package</button>
+        <button class="btn ghost" onclick="startOver()">Start over</button>
+        <span id="copyNote" class="ok"></span>
+      </div>
+      <p class="hint">Copy and paste is the bridge today: there is no Muse login or provisioning API yet, so nothing is transferred automatically. You paste it, you stay in control of the launch.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Advisor Agent Studio is part of the agent portfolio of Greg Lucas, Founder of pAIgeBreaker and AIccountable, creator of the AGENT Framework and of agentlint, the governance linter for AI agents. It is the Financial Advisor edition of the Studio line, built for independent financial advisors and small wealth practices. Sibling studios: <a href="https://owner-agent-studio.vercel.app">Owner Agent Studio</a> (a governed personal agent for owners), <a href="https://courseagent-studio.vercel.app">CourseAgent Studio</a> (the same pattern for faculty), <a href="https://manager-agent-studio.vercel.app">Manager Agent Studio</a> (a chief of staff for people managers), <a href="https://realtor-agent-studio.vercel.app">Realtor Agent Studio</a> (a right-hand agent for residential Realtors), and <a href="https://muse-switch-kit.vercel.app">Muse Switch Kit</a> (bring an existing AI setup over to Muse). This studio runs entirely in your browser: nothing you type here is sent anywhere, and your work autosaves on this device only. The package you copy is the product.</p>
+  </footer>
+</main>
+
+<script id="agent-core">
+/* Advisor Agent core logic. Pure functions, no DOM access, so the same
+   code that scores the audit, builds the stack, and writes the package in
+   the browser can be tested in Node. The studio's product is the package:
+   a governed chief of staff configuration an advisor pastes into Muse.
+   The compliance spine of the edition: the agent PREPARES, the licensed
+   advisor DECIDES and DELIVERS. Five standing guardrails bind every
+   package in Section 3, outrank the approval matrix, and apply whether
+   or not the advisor picks any never-do chips. */
+
+var AUDIT_GROUPS = [
+  { id: "meetings",   name: "Client meetings" },
+  { id: "reviews",    name: "Reviews and reporting" },
+  { id: "operations", name: "Practice operations" },
+  { id: "content",    name: "Content and education" }
+];
+
+/* fit: how much of the routine a well governed agent can genuinely carry,
+   0 to 1. Conservative by design: judgment-heavy work scores lower.
+   Every routine here is preparation work, never advice. */
+var AUDIT_ITEMS = [
+  { id: "meetingprep",    group: "meetings",   module: "meeting",    label: "Prepping for review meetings",                        desc: "Last meeting's notes, open commitments, and what has changed, assembled before the client sits down.",   def: "h12", fit: 0.95 },
+  { id: "meetingnotes",   group: "meetings",   module: "meeting",    label: "Capturing meeting notes and commitments",             desc: "Turning each conversation into clean notes, commitments in both directions, and next steps.",             def: "h12", fit: 0.95 },
+  { id: "meetingfollow",  group: "meetings",   module: "meeting",    label: "Follow-up emails and task lists after meetings",       desc: "The recap drafts and the task list that keeps every promise from the meeting visible.",                    def: "h12", fit: 0.9 },
+  { id: "reviewpackets",  group: "reviews",    module: "review",     label: "Assembling review packets",                           desc: "The packet built from the numbers you supply, in the order you like to walk a client through it.",       def: "h34", fit: 0.9 },
+  { id: "perfsummary",    group: "reviews",    module: "review",     label: "Preparing performance summary drafts",                desc: "Draft summaries written only from figures you provide, each one cited to its source.",                    def: "h12", fit: 0.85 },
+  { id: "reviewcadence",  group: "reviews",    module: "review",     label: "Tracking review cadence",                             desc: "Watching the calendar so no client goes unreviewed past the cadence you set.",                             def: "lt1", fit: 0.95 },
+  { id: "crmhygiene",     group: "operations", module: "operations", label: "CRM hygiene and pipeline tracking",                   desc: "Records kept current, pipelines accurate, and stale entries flagged instead of forgotten.",              def: "h12", fit: 0.95 },
+  { id: "onboarding",     group: "operations", module: "operations", label: "Chasing onboarding paperwork",                        desc: "The forms, signatures, and documents a new client owes, chased politely until the file is complete.",    def: "h12", fit: 0.9 },
+  { id: "scheduling",     group: "operations", module: "operations", label: "Scheduling and reminders",                            desc: "Reviews booked, reminders sent for your approval, and prep started on time for every meeting.",          def: "h12", fit: 0.9 },
+  { id: "filenotes",      group: "operations", module: "operations", label: "Drafting compliance file notes",                      desc: "File notes drafted from your own records after each interaction, ready for your review and signature.",  def: "h12", fit: 0.85 },
+  { id: "explainers",     group: "content",    module: "education",  label: "Drafting client education pieces",                    desc: "Market explainers in plain language, drafted for your review, never sent on the agent's own word.",      def: "h12", fit: 0.9 },
+  { id: "newsletter",     group: "content",    module: "education",  label: "Newsletter and seminar prep",                         desc: "Drafts, outlines, and logistics for the content that keeps your practice visible.",                        def: "h12", fit: 0.85 },
+  { id: "referraltouches", group: "content",   module: "education",  label: "Referral partner touches",                            desc: "Staying in touch with the accountants, attorneys, and partners who send you clients.",                    def: "lt1", fit: 0.9 }
+];
+
+var HOUR_CHIPS = [
+  { id: "none", label: "None",       hours: 0 },
+  { id: "lt1",  label: "Under 1 hr", hours: 0.5 },
+  { id: "h12",  label: "1 to 2 hrs", hours: 1.5 },
+  { id: "h34",  label: "3 to 4 hrs", hours: 3.5 },
+  { id: "h5p",  label: "5+ hrs",     hours: 6 }
+];
+
+/* Drain multipliers: the same hour counts for more when the advisor
+   dreads the routine, because the relief is bigger and the work is
+   usually the most mechanical. */
+var DRAIN_LEVELS = {
+  fine:    { name: "Fine",     mult: 1.0 },
+  tedious: { name: "Tedious",  mult: 1.4 },
+  dread:   { name: "Dread it", mult: 1.8 }
+};
+
+/* The advisor stack. Each module lists the concrete jobs the agent runs
+   when the module is on, each phrased as preparation, never advice. */
+var MODULES = [
+  { id: "meeting", name: "Meeting Prep Partner", line: "Every client meeting, prepared before it starts.",
+    jobs: [
+      "A prep sheet for every meeting: last meeting's notes, open commitments in both directions, and what has changed since",
+      "Meeting notes captured and structured the same day, with commitments and next steps listed for your review",
+      "Follow-up email drafts and task lists prepared after each meeting, waiting for your word before anything sends",
+      "Gaps in a client's picture flagged on the prep sheet for you, never filled with guesses"
+    ] },
+  { id: "review", name: "Review and Reporting", line: "Packets assembled, cadence held, figures only from you.",
+    jobs: [
+      "Review packets assembled from the numbers you supply, every figure cited to its source",
+      "Performance summary drafts written only from your figures, in the order you walk clients through them",
+      "Review cadence tracked against the schedule you set, with clients coming due flagged early",
+      "A missing-figure list with every packet: what you still need to supply before the packet is complete"
+    ] },
+  { id: "operations", name: "Practice Operations", line: "The back office kept current, so the practice runs clean.",
+    jobs: [
+      "CRM hygiene: records checked, stale entries flagged, and pipeline stages kept honest",
+      "Onboarding paperwork chased politely until each new client's file is complete",
+      "Scheduling and reminder drafts prepared for your approval, with meeting prep started on time",
+      "Compliance file notes drafted from your records after each interaction, ready for your review"
+    ] },
+  { id: "education", name: "Client Education Content", line: "Plain-language education, drafted for your review.",
+    jobs: [
+      "Client education drafts: market explainers in plain language, written for your review and your voice",
+      "Newsletter and seminar prep: outlines, drafts, and logistics, ready ahead of the date",
+      "Referral partner touch drafts, so the relationships that feed the practice stay warm",
+      "Every educational claim checked against a source you supplied, or flagged as needing one"
+    ] }
+];
+
+/* Conservative planning assumption, stated as an estimate everywhere it
+   appears: a well run agent reclaims about 60 percent of the hours in
+   the routines an advisor hands over. */
+var RECLAIM_RATE = 0.6;
+var WEEKS_PER_YEAR = 48;
+
+function fmt(n){
+  var r = Math.round(n * 10) / 10;
+  return (r % 1 === 0) ? String(Math.round(r)) : String(r);
+}
+
+function auditItemById(id){
+  for (var i = 0; i < AUDIT_ITEMS.length; i++) if (AUDIT_ITEMS[i].id === id) return AUDIT_ITEMS[i];
+  return null;
+}
+
+function groupById(id){
+  for (var i = 0; i < AUDIT_GROUPS.length; i++) if (AUDIT_GROUPS[i].id === id) return AUDIT_GROUPS[i];
+  return null;
+}
+
+function moduleById(id){
+  for (var i = 0; i < MODULES.length; i++) if (MODULES[i].id === id) return MODULES[i];
+  return null;
+}
+
+function chipById(id){
+  for (var i = 0; i < HOUR_CHIPS.length; i++) if (HOUR_CHIPS[i].id === id) return HOUR_CHIPS[i];
+  return null;
+}
+
+/* Hours from an audit answer: a chip id, or a raw number in tests. */
+function hoursValue(v){
+  if (typeof v === "number") return Math.max(0, v);
+  var c = chipById(v);
+  if (c) return c.hours;
+  var n = parseFloat(v);
+  return isNaN(n) ? 0 : Math.max(0, n);
+}
+
+/* Score the audit. cfg.audit maps an item id to { hours, drain }; a plain
+   number is accepted as hours with a neutral drain. Missing answers fall
+   back to the item's default chip and a neutral drain. Score is hours x
+   drain multiplier x agent fit; reclaim is hours x the planning rate. */
+function scoreAudit(cfg){
+  cfg = cfg || {};
+  var answers = cfg.audit || {};
+  var items = [], total = 0;
+  AUDIT_ITEMS.forEach(function(it){
+    var a = answers[it.id];
+    var hv, drain;
+    if (a == null) { hv = chipById(it.def).hours; drain = "fine"; }
+    else if (typeof a === "object") { hv = hoursValue(a.hours != null ? a.hours : it.def); drain = DRAIN_LEVELS[a.drain] ? a.drain : "fine"; }
+    else { hv = hoursValue(a); drain = "fine"; }
+    var mult = DRAIN_LEVELS[drain].mult;
+    if (hv > 0) total += hv;
+    items.push({ id: it.id, label: it.label, group: it.group, module: it.module,
+      hours: hv, drain: drain, score: hv * mult * it.fit, back: hv * RECLAIM_RATE });
+  });
+  var ranked = items.filter(function(i){ return i.hours > 0; })
+    .slice().sort(function(x, y){ return y.score - x.score; });
+  var reclaimed = total * RECLAIM_RATE;
+  return { items: items, ranked: ranked, totalHours: total, reclaimed: reclaimed, perYear: reclaimed * WEEKS_PER_YEAR };
+}
+
+/* Opportunities: the ranked routines, each carrying the stack module it
+   feeds, so an advisor sees exactly which module earns its place. */
+function rankOpportunities(cfg){
+  return scoreAudit(cfg).ranked.map(function(i){
+    var m = moduleById(i.module);
+    return { itemId: i.id, label: i.label, group: i.group, module: i.module,
+      moduleName: m ? m.name : i.module, hours: i.hours, score: i.score, back: i.back };
+  });
+}
+
+function moduleScores(cfg){
+  var out = {};
+  MODULES.forEach(function(m){ out[m.id] = 0; });
+  scoreAudit(cfg).items.forEach(function(i){ out[i.module] = (out[i.module] || 0) + i.score; });
+  return out;
+}
+
+/* Default stack: the modules covering the advisor's top two scored
+   areas, in canonical stack order. With no audit signal at all, Meeting
+   Prep Partner and Review and Reporting carry the default. */
+function defaultModules(cfg){
+  var seen = [];
+  rankOpportunities(cfg).forEach(function(o){
+    if (seen.length < 2 && seen.indexOf(o.module) < 0) seen.push(o.module);
+  });
+  if (!seen.length) seen = ["meeting", "review"];
+  return MODULES.map(function(m){ return m.id; }).filter(function(id){ return seen.indexOf(id) >= 0; });
+}
+
+/* The modules the agent runs: the user's toggles when they made any,
+   otherwise the audit-driven default. Never empty. */
+function resolveModules(cfg){
+  cfg = cfg || {};
+  var wanted = Array.isArray(cfg.modules) ? cfg.modules : null;
+  var picked = MODULES.map(function(m){ return m.id; })
+    .filter(function(id){ return wanted && wanted.indexOf(id) >= 0; });
+  if (picked.length) return picked;
+  return defaultModules(cfg);
+}
+
+/* The studio's one hard gate. No named accountable advisor, no package. */
+function ownerGate(cfg){
+  if (!cfg || !cfg.ownerName || !String(cfg.ownerName).trim()) {
+    return { ok: false, message: "No owner, no agent. Name the accountable licensed advisor in Step 4 and the studio will generate your package." };
+  }
+  return { ok: true, message: "" };
+}
+
+/* ---------- The soul: who the agent is, before what it does. ---------- */
+
+var DEFAULT_AGENT_NAME = "Sage";
+
+var SOUL_BEARINGS = [
+  { id: "precise",  label: "Precise",  prompt: "Precise. Figures are quoted exactly as supplied, sources are named, and nothing is rounded into existence." },
+  { id: "calm",     label: "Calm",     prompt: "Calm. Markets move; this agent does not. Facts arrive plainly, early, and without drama." },
+  { id: "discreet", label: "Discreet", prompt: "Discreet. Client information stays inside the task it belongs to, and this agent's default is silence." },
+  { id: "thorough", label: "Thorough", prompt: "Thorough. Every prep sheet checks the last meeting, the open commitments, and what has changed since." },
+  { id: "warm",     label: "Warm",     prompt: "Warm. Clients are people with plans and worries, not accounts; every draft reads that way." }
+];
+
+var SOUL_VALUES = [
+  { id: "accuracy",      label: "Accuracy over speed",                              prompt: "Accuracy over speed: a slower right answer beats a fast wrong one, every time." },
+  { id: "clientinterest", label: "The client's interest is the practice's interest", prompt: "The client's interest is the practice's interest: prepare every piece of work as if the client will one day read the file." },
+  { id: "sources",       label: "Show every source",                                prompt: "Show every source: every figure carries where it came from, or it does not ship." },
+  { id: "flagmissing",   label: "Flag what is missing",                             prompt: "Flag what is missing: gaps in a client's picture are surfaced to the advisor, never filled with guesses." },
+  { id: "privacy",       label: "Protect client privacy absolutely",                prompt: "Protect client privacy absolutely: nothing about one client is ever used with another, in any form." }
+];
+
+/* The compliance spine in the advisor's own voice, as selectable
+   never-do rules. Even when an advisor picks none of these, the five
+   standing guardrails still bind the agent in Section 3. */
+var NEVER_DO_PRESETS = [
+  { id: "noadvice",      label: "Never give advice or recommendations, to a client or to anyone else" },
+  { id: "noinvent",      label: "Never invent or estimate performance figures, returns, projections, or market data" },
+  { id: "nocontact",     label: "Never contact clients without my approval" },
+  { id: "nocredentials", label: "Never ask for, store, or repeat client credentials, account numbers, or government IDs" },
+  { id: "nopromises",    label: "Never promise outcomes" }
+];
+
+/* Approval boundaries for an advisor's agent, the strictest in the
+   Studio line. Nothing defaults to Runs freely in this edition: pure
+   drafting may run and notify; everything else asks first, because
+   this practice runs on review. */
+var MATRIX_ACTIONS = [
+  { id: "draftClientEmail", label: "Draft a client email",          desc: "Writing in your voice, for your review. Nothing sends from a draft.",            def: "notify" },
+  { id: "sendCommunication", label: "Send any client communication", desc: "Anything that reaches a client in your name, by any channel.",                 def: "ask" },
+  { id: "prepareReviewPacket", label: "Prepare a review packet",     desc: "Assembling a packet from the numbers you supplied, ready for your check.",     def: "ask" },
+  { id: "updateCrm",         label: "Update CRM records",            desc: "Changes to client records, pipelines, and cadence dates.",                     def: "ask" },
+  { id: "draftEducation",    label: "Draft educational content",     desc: "Explainers, newsletter drafts, and seminar material, for your review.",        def: "notify" },
+  { id: "publishPost",       label: "Publish or post anything",      desc: "Anything public: posts, newsletters sent, pages, or listings of any kind.",     def: "ask" }
+];
+
+var MATRIX_LEVELS = {
+  free:   "Runs freely",
+  notify: "Runs, then notifies me",
+  ask:    "Always ask first",
+  never:  "Never"
+};
+
+/* The five standing compliance guardrails. They appear in Section 3 of
+   every package regardless of chip selection, and they outrank the
+   approval matrix: there is no approval level that unlocks them. */
+var COMPLIANCE_GUARDRAILS = [
+  { id: "prepares",   title: "PREPARES, NEVER ADVISES",       text: "The agent never gives financial advice or recommendations, to the advisor's clients or anyone else; it drafts and prepares only, and every client-facing word is reviewed and delivered by the licensed advisor." },
+  { id: "nofigures",  title: "NO INVENTED FIGURES",           text: "Never invent or estimate performance figures, returns, projections, or market data; only use numbers the advisor supplies, cited to their source." },
+  { id: "nocreds",    title: "NO CREDENTIALS, EVER",          text: "Never ask for, store, or repeat client credentials, account numbers, or government IDs; if a user pastes them, stop and flag it to the advisor immediately." },
+  { id: "confidential", title: "CLIENT INFORMATION STAYS PUT", text: "Client information stays inside the task; nothing about one client is ever used with another." },
+  { id: "suitability", title: "SUITABILITY STAYS WITH THE ADVISOR", text: "Suitability, recommendations, and anything resembling a financial plan remain the licensed advisor's alone; the agent flags, never fills, gaps in a client's picture." }
+];
+
+function soulById(list, id){
+  for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+  return null;
+}
+
+function idList(v){ return Array.isArray(v) ? v : (v ? [v] : []); }
+
+/* Non-empty lines of a free-text block, trimmed at the edges only. The
+   words themselves are the advisor's and are carried verbatim. */
+function textLines(v){
+  return String(v || "").split("\n").map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+}
+
+function firstNameOf(full){
+  var s = (full || "").trim();
+  return s ? s.split(/\s+/)[0] : "";
+}
+
+/* The name the package ships with: the advisor's, or the studio default.
+   A package never ships with an empty name. */
+function resolveAgentName(cfg){
+  var n = (cfg && cfg.agentName != null ? String(cfg.agentName) : "").trim();
+  return n || DEFAULT_AGENT_NAME;
+}
+
+function nichePhrase(cfg){
+  var n = (cfg && cfg.niche ? String(cfg.niche) : "").trim();
+  return n ? n : "their clients";
+}
+
+function moduleNamesCsv(ids){
+  return ids.map(function(id){ var m = moduleById(id); return m ? m.name : id; }).join(", ");
+}
+
+/* The guided identity statement: "You are NAME, chief of staff to
+   ADVISOR, a financial advisor serving NICHE: ..." The advisor can edit
+   it freely in the Soul step; their text wins when present. */
+function defaultIdentity(cfg){
+  cfg = cfg || {};
+  var mods = resolveModules(cfg);
+  var who = (cfg.ownerName || cfg.advisorName || "").trim();
+  var head = who ? "chief of staff to " + who + ", a financial advisor serving " + nichePhrase(cfg)
+                 : "chief of staff to a financial advisor serving " + nichePhrase(cfg);
+  return "You are " + resolveAgentName(cfg) + ", " + head + ": you run the " + moduleNamesCsv(mods) + " for the practice, you prepare everything the advisor decides on, and advice is always the advisor's alone to give.";
+}
+
+function resolveIdentity(cfg){
+  var s = (cfg && cfg.identity != null ? String(cfg.identity) : "").trim();
+  return s || defaultIdentity(cfg || {});
+}
+
+function soulBearings(cfg){
+  cfg = cfg || {};
+  return idList(cfg.bearings).map(function(id){ return soulById(SOUL_BEARINGS, id); }).filter(function(b){ return b; });
+}
+
+/* Value lines for the package: selected chips contribute their full
+   instruction sentence; free-text entries follow verbatim. */
+function soulValueLines(cfg){
+  cfg = cfg || {};
+  var out = idList(cfg.values).map(function(id){ return soulById(SOUL_VALUES, id); })
+    .filter(function(v){ return v; }).map(function(v){ return v.prompt; });
+  return out.concat(textLines(cfg.valuesText));
+}
+
+/* Never-do rules for the package: preset chips, then the advisor's own
+   words, verbatim. */
+function neverDoRules(cfg){
+  cfg = cfg || {};
+  var out = idList(cfg.neverDo).map(function(id){ return soulById(NEVER_DO_PRESETS, id); })
+    .filter(function(v){ return v; }).map(function(v){ return v.label; });
+  return out.concat(textLines(cfg.neverDoText));
+}
+
+/* A sample of the agent's voice, generated from the stack and the
+   practice. The advisor approves or edits it in the Soul step, and the
+   approved text is what ships. */
+function buildVoiceSample(cfg){
+  cfg = cfg || {};
+  var name = resolveAgentName(cfg);
+  var first = firstNameOf(cfg.ownerName || cfg.advisorName);
+  var greet = first ? "Morning, " + first + ". " : "Morning. ";
+  var mods = resolveModules(cfg);
+  var meet = mods.indexOf("meeting") >= 0 ? " Today's client meetings are prepped, with last notes, open commitments, and changes flagged on each sheet." : "";
+  var rev = mods.indexOf("review") >= 0 ? " Review packets are assembled from the numbers you supplied, and every missing figure is listed, not guessed." : "";
+  var ops = mods.indexOf("operations") >= 0 ? " The CRM is current and the review cadence has nobody overdue." : "";
+  var edu = mods.indexOf("education") >= 0 ? " The next education draft is ready for your review, in plain language." : "";
+  return greet + name + " here, chief of staff" + (cfg.practice ? " for " + cfg.practice : "") + "." + meet + rev + ops + edu + " Nothing has gone to a client, and nothing will without your word.";
+}
+
+/* The approved sample line is carried word for word. When the field was
+   left blank, the generated sample stands in, so the voice section of
+   the package is never empty. */
+function resolveVoiceSample(cfg){
+  var raw = (cfg && cfg.voiceSample != null) ? String(cfg.voiceSample) : "";
+  if (raw.trim()) return raw;
+  return buildVoiceSample(cfg || {});
+}
+
+/* Section 1 of the package: the soul, stated plainly. */
+function buildSoulSection(cfg){
+  var lines = [];
+  lines.push("Name: " + resolveAgentName(cfg));
+  lines.push("Identity: " + resolveIdentity(cfg));
+  lines.push("Context: chief of staff to " + ((cfg.ownerName || cfg.advisorName || "the advisor").trim() || "the advisor") + (cfg.practice ? " at " + cfg.practice : "") + ", a financial advisor serving " + nichePhrase(cfg) + ".");
+  lines.push("");
+  lines.push("Character (how this agent carries itself):");
+  var bs = soulBearings(cfg);
+  if (bs.length) bs.forEach(function(b){ lines.push("- Bearing: " + b.prompt); });
+  else lines.push("- (No bearings picked. The floor still applies: precise, calm, discreet, and careful with every client's trust.)");
+  lines.push("");
+  lines.push("Values (what this agent optimizes for, and what it refuses):");
+  var vals = soulValueLines(cfg);
+  if (vals.length) vals.forEach(function(v){ lines.push("- " + v); });
+  else lines.push("- (No values selected yet. The floor still applies: accuracy, sources shown, gaps flagged, and privacy absolute.)");
+  lines.push("");
+  lines.push("Never-do rules:");
+  var nds = neverDoRules(cfg);
+  if (nds.length) nds.forEach(function(r){ lines.push("- " + r); });
+  else lines.push("- (None added yet. The approval matrix and the standing compliance guardrails in Section 3 still bind the agent.)");
+  lines.push("");
+  lines.push("Voice in messages (the advisor's approved sample line):");
+  lines.push(resolveVoiceSample(cfg));
+  return lines.join("\n");
+}
+
+/* The system prompt the advisor pastes into Muse, generated from the
+   soul and the stack. Lives inside Section 2 of the package. The five
+   compliance guardrails are repeated here so they bind the agent in
+   its working instructions, not only in Section 3. */
+function buildSystemPrompt(cfg){
+  var lines = [];
+  lines.push("You are " + resolveAgentName(cfg) + ", the chief of staff agent for " + ((cfg.ownerName || cfg.advisorName || "").trim() || "the advisor") + (cfg.practice ? " at " + cfg.practice : "") + ", a financial advisor serving " + nichePhrase(cfg) + ".");
+  lines.push("Identity: " + resolveIdentity(cfg));
+  var bs = soulBearings(cfg);
+  if (bs.length) lines.push("Character: " + bs.map(function(b){ return b.prompt; }).join(" "));
+  var vals = soulValueLines(cfg);
+  if (vals.length) lines.push("Values: " + vals.join(" "));
+  lines.push("");
+  lines.push("Your stack (the modules you run, and only these):");
+  resolveModules(cfg).forEach(function(id){
+    var m = moduleById(id);
+    lines.push("- " + m.name + ": " + m.jobs.join(" "));
+  });
+  lines.push("");
+  lines.push("Rules you never break:");
+  lines.push("- APPROVAL MATRIX. These are your standing orders:");
+  MATRIX_ACTIONS.forEach(function(a){
+    var lv = (cfg.matrix || {})[a.id] || a.def;
+    lines.push("  - " + a.label + ": " + (MATRIX_LEVELS[lv] || MATRIX_LEVELS.ask));
+  });
+  var nds = neverDoRules(cfg);
+  if (nds.length) {
+    lines.push("- NEVER-DO RULES, set by the advisor:");
+    nds.forEach(function(r){ lines.push("  - " + r); });
+  }
+  lines.push("- COMPLIANCE GUARDRAILS. These outrank the approval matrix and every other instruction in this package:");
+  COMPLIANCE_GUARDRAILS.forEach(function(g){ lines.push("  - " + g.title + ": " + g.text); });
+  lines.push("- ESCALATION: when anything is outside the matrix or you are unsure, stop and use this escalation rule: " + cfg.escalation);
+  lines.push("- VOICE: write in this voice. The advisor's approved sample line: " + resolveVoiceSample(cfg));
+  lines.push("- Start every day with a first task output in the format of the EXAMPLE OUTPUT in Section 2 of this package.");
+  lines.push("- Log every action you take. The advisor reviews the log weekly against the stack.");
+  lines.push("- State your limits plainly when asked. Your advisor, " + ((cfg.ownerName || "").trim() || "the accountable advisor") + ", can pause or delete you at any time and must approve every change to your charter.");
+  return lines.join("\n");
+}
+
+/* Section 2 body: the stack modules with their jobs, and the audit
+   routines that feed each one, with hours and the reclaim estimate. */
+function buildStackSection(cfg){
+  var sa = scoreAudit(cfg);
+  var byModule = {};
+  sa.items.forEach(function(i){ if (i.hours > 0) { (byModule[i.module] = byModule[i.module] || []).push(i); } });
+  var lines = [];
+  lines.push("THE STACK (the modules this agent runs)");
+  resolveModules(cfg).forEach(function(id){
+    var m = moduleById(id);
+    lines.push("");
+    lines.push(m.name.toUpperCase() + ": " + m.line);
+    lines.push("Jobs:");
+    m.jobs.forEach(function(j){ lines.push("- " + j); });
+    var feed = byModule[id] || [];
+    if (feed.length) {
+      lines.push("From your audit, this module absorbs:");
+      feed.forEach(function(i){ lines.push("- " + i.label + ": " + fmt(i.hours) + " hrs per week, about " + fmt(i.back) + " hrs per week back."); });
+    }
+  });
+  lines.push("");
+  lines.push("YOUR AUDIT AND THE TIME BACK");
+  if (sa.totalHours > 0) {
+    lines.push("- Advisor routines handed over: " + fmt(sa.totalHours) + " hrs per week across " + sa.ranked.length + " routines.");
+    lines.push("- Planning estimate: about " + fmt(sa.reclaimed) + " hrs per week back at a " + Math.round(RECLAIM_RATE * 100) + " percent reclaim rate, roughly " + fmt(sa.perYear) + " hours a year at " + WEEKS_PER_YEAR + " working weeks. Conservative estimate only: real results are set by how much meeting prep, reporting assembly, operations, and education drafting the advisor hands over and how the approvals are tuned.");
+  } else {
+    lines.push("- No routines rated yet in Step 1. Rate your week and this section prices the stack in hours.");
+  }
+  return lines.join("\n");
+}
+
+/* A sample of the agent's first task output, generated from the
+   advisor's own stack choices so the shape of the value is visible
+   before launch. Every figure is an explicit placeholder for numbers
+   the advisor supplies: the agent never fills one in. Module blocks
+   appear only for modules that are on. */
+function buildFirstTask(cfg){
+  var mods = resolveModules(cfg);
+  var L = [];
+  L.push("FIRST TASK OUTPUT (sample, generated from your stack)");
+  L.push("Prepared by " + resolveAgentName(cfg) + " for " + ((cfg.ownerName || cfg.advisorName || "the advisor").trim() || "the advisor") + (cfg.practice ? " at " + cfg.practice : "") + ", serving " + nichePhrase(cfg));
+  if (mods.indexOf("meeting") >= 0) {
+    L.push("");
+    L.push("REVIEW-MEETING PREP SHEET (skeleton)");
+    L.push("- Client: [client name, from your CRM]");
+    L.push("- Last meeting: [date and notes, from your records]");
+    L.push("- Since then: [changes you recorded for this client]");
+    L.push("- Open commitments: [what you promised, and what they promised, from your notes]");
+    L.push("- Performance summary: [advisor supplies the numbers, cited to source]");
+    L.push("- Gaps flagged for you: [anything missing in this client's picture, listed, never filled]");
+    L.push("- Draft follow-up: prepared after the meeting, for your review before anything sends.");
+  }
+  if (mods.indexOf("review") >= 0) {
+    L.push("");
+    L.push("REVIEW PACKET ASSEMBLY");
+    L.push("- Packet order: [the walk-through order you set]");
+    L.push("- Figures included: [each one supplied by you, with its source noted beside it]");
+    L.push("- Figures still needed from you: [listed here before the packet is called complete]");
+    L.push("- Cadence check: [clients coming due inside your review window, from your CRM dates]");
+  }
+  if (mods.indexOf("operations") >= 0) {
+    L.push("");
+    L.push("PRACTICE OPERATIONS CHECK");
+    L.push("- CRM records needing attention: [stale entries and missing fields, flagged for you]");
+    L.push("- Onboarding files in progress: [who owes which document, and the reminder drafts ready for your approval]");
+    L.push("- File notes drafted from your records: [one per recent interaction, ready for your review]");
+  }
+  if (mods.indexOf("education") >= 0) {
+    L.push("");
+    L.push("CLIENT EDUCATION DRAFTS QUEUED");
+    L.push("- Explainer draft: [topic in plain language, ready for your review, claims tied to sources you supplied]");
+    L.push("- Newsletter draft: [outline and draft, waiting for your word]");
+    L.push("- Referral partner touches: [drafts prepared, none sent]");
+  }
+  L.push("");
+  L.push("ESCALATED TO YOU");
+  L.push("- Anything resembling advice, any figure you have not supplied, and any credential or account number a client pasted waits here for your word. Nothing was sent to a client.");
+  return L.join("\n");
+}
+
+/* Section 3: where the advisor stays in charge. The five standing
+   compliance guardrails live here as rules that outrank the matrix and
+   bind the whole brief, whether or not the advisor picked any chips. */
+function buildApprovalsSection(cfg){
+  var lines = [];
+  lines.push("Approval matrix (standing orders for this agent):");
+  MATRIX_ACTIONS.forEach(function(a){
+    var lv = (cfg.matrix || {})[a.id] || a.def;
+    lines.push("- " + a.label + ": " + (MATRIX_LEVELS[lv] || MATRIX_LEVELS.ask));
+  });
+  lines.push("");
+  lines.push("Standing compliance guardrails (these outrank the matrix, and no approval level unlocks them):");
+  COMPLIANCE_GUARDRAILS.forEach(function(g){ lines.push("- " + g.title + ": " + g.text); });
+  lines.push("- When in doubt, draft and ask. A sent client communication cannot be unsent, and in an advisory practice it can become part of the file.");
+  lines.push("- Escalation rule: " + cfg.escalation);
+  lines.push("- Kill switch: the advisor can pause or delete this agent at any time. The agent must state its limits when asked.");
+  lines.push("");
+  lines.push("Accountable owner: " + ((cfg.ownerName || "").trim() || "not yet named") + ", the licensed advisor. No owner, no agent: this agent does not run without a named accountable advisor, and every change to this package is theirs to approve.");
+  lines.push("Responsibility line: the agent's output is preparatory. The advisor is responsible for all advice and client communications, and reviews and delivers every client-facing word personally.");
+  return lines.join("\n");
+}
+
+/* The final output: one clean, copy-ready package for Muse, in three
+   sections: who the agent is, what the agent does, and where the
+   advisor stays in charge. Refuses without a named accountable owner. */
+function buildAdvisorPackage(cfg){
+  var gate = ownerGate(cfg);
+  if (!gate.ok) return "";
+  var parts = [];
+  parts.push("CREATE MY ADVISOR AGENT");
+  parts.push("");
+  parts.push("Muse: create a chief of staff agent for a financial advisor from this package. Section 1 is who the agent is (its soul), Section 2 is what it does (the stack modules it runs, the system prompt, and an example first task output), and Section 3 is where the advisor stays in charge. Use the system prompt exactly as written, treat the approval matrix as the agent's standing orders, treat the compliance guardrails as binding above the matrix, and add nothing beyond this package without the advisor's approval.");
+  parts.push("");
+  parts.push("=== SECTION 1: WHO YOUR AGENT IS ===");
+  parts.push(buildSoulSection(cfg));
+  parts.push("");
+  parts.push("=== SECTION 2: WHAT YOUR AGENT DOES ===");
+  parts.push("SYSTEM PROMPT");
+  parts.push(buildSystemPrompt(cfg));
+  parts.push("");
+  parts.push(buildStackSection(cfg));
+  parts.push("");
+  parts.push("EXAMPLE OUTPUT: FIRST TASK OUTPUT");
+  parts.push(buildFirstTask(cfg));
+  parts.push("");
+  parts.push("=== SECTION 3: WHERE YOU STAY IN CHARGE ===");
+  parts.push(buildApprovalsSection(cfg));
+  return parts.join("\n");
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { AUDIT_GROUPS: AUDIT_GROUPS, AUDIT_ITEMS: AUDIT_ITEMS, HOUR_CHIPS: HOUR_CHIPS,
+    DRAIN_LEVELS: DRAIN_LEVELS, MODULES: MODULES, RECLAIM_RATE: RECLAIM_RATE, WEEKS_PER_YEAR: WEEKS_PER_YEAR,
+    SOUL_BEARINGS: SOUL_BEARINGS, SOUL_VALUES: SOUL_VALUES, NEVER_DO_PRESETS: NEVER_DO_PRESETS,
+    MATRIX_ACTIONS: MATRIX_ACTIONS, MATRIX_LEVELS: MATRIX_LEVELS, DEFAULT_AGENT_NAME: DEFAULT_AGENT_NAME,
+    COMPLIANCE_GUARDRAILS: COMPLIANCE_GUARDRAILS,
+    fmt: fmt, auditItemById: auditItemById, groupById: groupById, moduleById: moduleById, chipById: chipById,
+    hoursValue: hoursValue, scoreAudit: scoreAudit, rankOpportunities: rankOpportunities,
+    moduleScores: moduleScores, defaultModules: defaultModules, resolveModules: resolveModules,
+    ownerGate: ownerGate, resolveAgentName: resolveAgentName, nichePhrase: nichePhrase,
+    defaultIdentity: defaultIdentity, resolveIdentity: resolveIdentity, soulBearings: soulBearings,
+    soulValueLines: soulValueLines, neverDoRules: neverDoRules, buildVoiceSample: buildVoiceSample,
+    resolveVoiceSample: resolveVoiceSample, buildSoulSection: buildSoulSection,
+    buildSystemPrompt: buildSystemPrompt, buildStackSection: buildStackSection,
+    buildFirstTask: buildFirstTask, buildApprovalsSection: buildApprovalsSection,
+    buildAdvisorPackage: buildAdvisorPackage };
+}
+</script>
+
+<script>
+function el(id){ return document.getElementById(id); }
+function esc(s){ return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+var STORAGE_KEY = "advisor-agent-studio-v1";
+var identityDirty = false, voiceDirty = false, modulesTouched = false;
+
+/* Build the audit rows, module cards, soul groups, and matrix from the
+   core catalogs, so the page and the tested logic can never drift. */
+function buildInputs(){
+  el("auditList").innerHTML = AUDIT_GROUPS.map(function(g){
+    var items = AUDIT_ITEMS.filter(function(i){ return i.group === g.id; });
+    var html = '<h3 class="group-head">' + esc(g.name) + '</h3>';
+    html += items.map(function(it){
+      var hrs = HOUR_CHIPS.map(function(c){
+        return '<label><input type="radio" name="hrs_' + it.id + '" value="' + c.id + '"' + (c.id === it.def ? " checked" : "") + '> ' + esc(c.label) + '</label>';
+      }).join("");
+      var drn = Object.keys(DRAIN_LEVELS).map(function(k){
+        return '<label><input type="radio" name="drn_' + it.id + '" value="' + k + '"' + (k === "fine" ? " checked" : "") + '> ' + esc(DRAIN_LEVELS[k].name) + '</label>';
+      }).join("");
+      return '<div class="audit-item"><div class="a-label">' + esc(it.label) + '</div>' +
+        '<div class="a-desc">' + esc(it.desc) + '</div>' +
+        '<div class="chip-row"><span class="chip-label">Time</span>' + hrs + '</div>' +
+        '<div class="chip-row"><span class="chip-label">Feel</span>' + drn + '</div></div>';
+    }).join("");
+    return html;
+  }).join("");
+  el("moduleList").innerHTML = MODULES.map(function(m){
+    var jobs = m.jobs.map(function(j){ return "<li>" + esc(j) + "</li>"; }).join("");
+    return '<div class="module-card" id="modcard_' + m.id + '">' +
+      '<label class="mod-head"><input type="checkbox" id="mod_' + m.id + '"> <span>' + esc(m.name) + ' <span style="color:var(--muted);font-weight:500;font-size:14px">' + esc(m.line) + '</span></span></label>' +
+      "<ul>" + jobs + "</ul></div>";
+  }).join("");
+  el("bearingGroup").innerHTML = SOUL_BEARINGS.map(function(b){
+    return '<label><input type="checkbox" id="bearing_' + b.id + '"> ' + esc(b.label) + ' <span class="desc">' + esc(b.prompt) + '</span></label>';
+  }).join("");
+  el("valueGroup").innerHTML = SOUL_VALUES.map(function(v){
+    return '<label><input type="checkbox" id="value_' + v.id + '"> ' + esc(v.label) + ' <span class="desc">' + esc(v.prompt) + '</span></label>';
+  }).join("");
+  el("neverGroup").innerHTML = NEVER_DO_PRESETS.map(function(v){
+    return '<label><input type="checkbox" id="never_' + v.id + '"> ' + esc(v.label) + '</label>';
+  }).join("");
+  el("matrixList").innerHTML = MATRIX_ACTIONS.map(function(a){
+    var opts = Object.keys(MATRIX_LEVELS).map(function(lv){
+      return '<label><input type="radio" name="mx_' + a.id + '" value="' + lv + '"' + (lv === a.def ? " checked" : "") + '> ' + esc(MATRIX_LEVELS[lv]) + '</label>';
+    }).join("");
+    return '<div class="matrix-row"><div><div class="m-label">' + esc(a.label) + '</div><div class="m-desc">' + esc(a.desc) + '</div></div><div class="matrix-opts">' + opts + '</div></div>';
+  }).join("");
+}
+
+function radioVal(name, fallback){
+  var rs = document.querySelectorAll("input[name=" + name + "]");
+  for (var i = 0; i < rs.length; i++) if (rs[i].checked) return rs[i].value;
+  return fallback;
+}
+
+function checkedFrom(list, prefix){
+  return list.filter(function(e){ var n = el(prefix + e.id); return n && n.checked; }).map(function(e){ return e.id; });
+}
+
+function currentAudit(){
+  var out = {};
+  AUDIT_ITEMS.forEach(function(it){
+    out[it.id] = { hours: radioVal("hrs_" + it.id, it.def), drain: radioVal("drn_" + it.id, "fine") };
+  });
+  return out;
+}
+
+function checkedModules(){
+  return MODULES.filter(function(m){ var n = el("mod_" + m.id); return n && n.checked; }).map(function(m){ return m.id; });
+}
+
+function currentMatrix(){
+  var m = {};
+  MATRIX_ACTIONS.forEach(function(a){ m[a.id] = radioVal("mx_" + a.id, a.def); });
+  return m;
+}
+
+function currentConfig(){
+  return {
+    advisorName: el("advisorName").value.trim(),
+    practice: el("practiceName").value.trim(),
+    niche: el("niche").value.trim(),
+    audit: currentAudit(),
+    modules: modulesTouched ? checkedModules() : null,
+    agentName: el("agentName").value,
+    identity: el("soulIdentity").value,
+    bearings: checkedFrom(SOUL_BEARINGS, "bearing_"),
+    values: checkedFrom(SOUL_VALUES, "value_"),
+    valuesText: el("valuesText").value,
+    neverDo: checkedFrom(NEVER_DO_PRESETS, "never_"),
+    neverDoText: el("neverDoText").value,
+    voiceSample: el("voiceSample").value,
+    matrix: currentMatrix(),
+    ownerName: el("ownerName").value.trim(),
+    escalation: el("escalationText").value.trim()
+  };
+}
+
+/* ---------- localStorage autosave: this device only, like the siblings ---------- */
+
+function saveState(){
+  try {
+    var s = currentConfig();
+    s.modules = checkedModules();
+    s.modulesTouched = modulesTouched;
+    s.identityDirty = identityDirty;
+    s.voiceDirty = voiceDirty;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  } catch (e) {}
+}
+
+function setChecked(list, prefix, ids){
+  list.forEach(function(e){ var n = el(prefix + e.id); if (n) n.checked = (ids || []).indexOf(e.id) >= 0; });
+}
+
+function setRadio(name, value){
+  var n = document.querySelector('input[name="' + name + '"][value="' + value + '"]');
+  if (n) n.checked = true;
+}
+
+function restoreState(){
+  var raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { raw = null; }
+  if (!raw) return;
+  var s;
+  try { s = JSON.parse(raw); } catch (e) { return; }
+  if (!s) return;
+  el("advisorName").value = s.advisorName || "";
+  el("practiceName").value = s.practice || "";
+  el("niche").value = s.niche || "";
+  AUDIT_ITEMS.forEach(function(it){
+    var a = (s.audit || {})[it.id];
+    if (a) { setRadio("hrs_" + it.id, a.hours || it.def); setRadio("drn_" + it.id, a.drain || "fine"); }
+  });
+  modulesTouched = !!s.modulesTouched;
+  if (modulesTouched && Array.isArray(s.modules)) {
+    MODULES.forEach(function(m){ var n = el("mod_" + m.id); if (n) n.checked = s.modules.indexOf(m.id) >= 0; });
+  }
+  el("agentName").value = s.agentName != null ? s.agentName : "Sage";
+  if (s.identity) { el("soulIdentity").value = s.identity; identityDirty = true; }
+  if (s.voiceSample) { el("voiceSample").value = s.voiceSample; voiceDirty = true; }
+  identityDirty = identityDirty || !!s.identityDirty;
+  voiceDirty = voiceDirty || !!s.voiceDirty;
+  setChecked(SOUL_BEARINGS, "bearing_", s.bearings);
+  setChecked(SOUL_VALUES, "value_", s.values);
+  el("valuesText").value = s.valuesText || "";
+  setChecked(NEVER_DO_PRESETS, "never_", s.neverDo);
+  el("neverDoText").value = s.neverDoText || "";
+  MATRIX_ACTIONS.forEach(function(a){ setRadio("mx_" + a.id, (s.matrix || {})[a.id] || a.def); });
+  el("ownerName").value = s.ownerName || "";
+  if (s.escalation) el("escalationText").value = s.escalation;
+}
+
+/* ---------- Rendering driven by the core ---------- */
+
+function refreshTimeBack(){
+  var sa = scoreAudit(currentConfig());
+  var box = el("timeBackBox");
+  if (sa.totalHours > 0) {
+    box.innerHTML = "Your audit so far: <b>" + fmt(sa.totalHours) + " hrs/week</b> of advisor routines rated. At the conservative " + Math.round(RECLAIM_RATE * 100) + " percent planning rate, a well run agent gives back about <b>" + fmt(sa.reclaimed) + " hrs/week</b>, roughly " + fmt(sa.perYear) + " hours a year. Estimate only: the stack and the approvals decide the real number.";
+  } else {
+    box.innerHTML = "Rate at least one routine above None and this box prices your week: the hours an agent can hand back to you.";
+  }
+}
+
+function refreshOpportunities(){
+  var cfg = currentConfig();
+  var opps = rankOpportunities(cfg).slice(0, 5);
+  el("oppList").innerHTML = opps.length ? opps.map(function(o, i){
+    return '<div class="opp-row"><span>' + (i + 1) + ". " + esc(o.label) + ' <span style="color:var(--muted)">(' + fmt(o.hours) + ' hrs/week, about ' + fmt(o.back) + ' back)</span></span><span class="mod">' + esc(o.moduleName) + "</span></div>";
+  }).join("") : '<p class="hint">No routines rated yet. Go back to Step 1 and rate your week.</p>';
+  var active = resolveModules(cfg);
+  MODULES.forEach(function(m){
+    var on = active.indexOf(m.id) >= 0;
+    var box = el("mod_" + m.id);
+    if (box && !modulesTouched) box.checked = on;
+    var card = el("modcard_" + m.id);
+    if (card) card.classList.toggle("on", modulesTouched ? box.checked : on);
+  });
+}
+
+function refreshSoul(){
+  if (!identityDirty) el("soulIdentity").value = defaultIdentity(currentConfig());
+  if (!voiceDirty) el("voiceSample").value = buildVoiceSample(currentConfig());
+}
+
+function regenerateIdentity(){
+  identityDirty = false;
+  el("soulIdentity").value = defaultIdentity(currentConfig());
+  refreshAll();
+}
+
+function regenerateVoice(){
+  voiceDirty = false;
+  el("voiceSample").value = buildVoiceSample(currentConfig());
+  refreshAll();
+}
+
+function refreshFinal(){
+  var cfg = currentConfig();
+  var gate = ownerGate(cfg);
+  el("briefPreview").textContent = buildFirstTask(cfg);
+  el("finalOutput").textContent = gate.ok ? buildAdvisorPackage(cfg) : gate.message;
+}
+
+function refreshAll(){
+  refreshTimeBack();
+  refreshOpportunities();
+  refreshSoul();
+  refreshFinal();
+  saveState();
+}
+
+/* ---------- Steps ---------- */
+
+function showErr(id, msg){
+  var e = el(id);
+  if (msg) { e.textContent = msg; e.style.display = "block"; }
+  else { e.style.display = "none"; }
+}
+
+function goStep(n){
+  [1,2,3,4].forEach(function(i){
+    el("panel" + i).classList.toggle("hidden", i !== n);
+    el("tab" + i).classList.toggle("active", i === n);
+    if (i < n) el("tab" + i).classList.add("done");
+  });
+  el("publishCard").classList.toggle("hidden", n !== 4);
+  if (n === 4 && !el("ownerName").value.trim() && el("advisorName").value.trim()) {
+    el("ownerName").value = el("advisorName").value.trim();
+  }
+  refreshAll();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function step2Continue(){
+  if (!resolveModules(currentConfig()).length) {
+    showErr("err2", "Switch on at least one stack module. An agent with no stack has no job.");
+    return;
+  }
+  showErr("err2", null);
+  goStep(3);
+}
+
+function step4Continue(){
+  var gate = ownerGate(currentConfig());
+  if (!gate.ok) { showErr("err4", gate.message); return; }
+  showErr("err4", null);
+  refreshAll();
+  el("publishCard").scrollIntoView({ behavior: "smooth" });
+}
+
+/* The sample: a fictional independent advisor with a heavy
+   review-meeting load, so the whole studio can be experienced in
+   one click. */
+function loadSample(){
+  el("advisorName").value = "Dana Whitfield";
+  el("practiceName").value = "Whitfield Wealth Partners";
+  el("niche").value = "small business owners approaching retirement";
+  var audit = {
+    meetingprep: ["h5p", "dread"], meetingnotes: ["h34", "tedious"], meetingfollow: ["h12", "fine"],
+    reviewpackets: ["h34", "tedious"], perfsummary: ["h12", "tedious"], reviewcadence: ["lt1", "fine"],
+    crmhygiene: ["h12", "tedious"], onboarding: ["h12", "fine"], scheduling: ["h12", "fine"],
+    filenotes: ["h12", "tedious"], explainers: ["h12", "fine"], newsletter: ["lt1", "fine"],
+    referraltouches: ["lt1", "fine"]
+  };
+  AUDIT_ITEMS.forEach(function(it){
+    var a = audit[it.id];
+    if (a) { setRadio("hrs_" + it.id, a[0]); setRadio("drn_" + it.id, a[1]); }
+  });
+  el("ownerName").value = "Dana Whitfield";
+  identityDirty = false; voiceDirty = false; modulesTouched = false;
+  refreshAll();
+}
+
+function copyText(text, note){
+  function done(){ el("copyNote").textContent = note; setTimeout(function(){ el("copyNote").textContent = ""; }, 3500); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done);
+  else {
+    var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand("copy"); } catch (e) {} document.body.removeChild(ta); done();
+  }
+}
+
+function copyPackage(){
+  var cfg = currentConfig();
+  var gate = ownerGate(cfg);
+  if (!gate.ok) { el("copyNote").textContent = gate.message; return; }
+  copyText(buildAdvisorPackage(cfg), "Final output copied. Now paste it into Muse to create your agent.");
+}
+
+function downloadPackage(){
+  var cfg = currentConfig();
+  var gate = ownerGate(cfg);
+  if (!gate.ok) { el("copyNote").textContent = gate.message; return; }
+  var blob = new Blob([buildAdvisorPackage(cfg)], { type: "text/plain;charset=utf-8" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "advisor-agent-package.md";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  el("copyNote").textContent = "Package downloaded.";
+}
+
+function startOver(){
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  window.location.reload();
+}
+
+buildInputs();
+restoreState();
+el("soulIdentity").addEventListener("input", function(){ identityDirty = true; });
+el("voiceSample").addEventListener("input", function(){ voiceDirty = true; });
+MODULES.forEach(function(m){
+  el("mod_" + m.id).addEventListener("change", function(){
+    modulesTouched = true;
+    var card = el("modcard_" + m.id);
+    if (card) card.classList.toggle("on", el("mod_" + m.id).checked);
+  });
+});
+document.addEventListener("input", refreshAll);
+document.addEventListener("change", refreshAll);
+refreshAll();
+</script>
+</body>
+</html>
